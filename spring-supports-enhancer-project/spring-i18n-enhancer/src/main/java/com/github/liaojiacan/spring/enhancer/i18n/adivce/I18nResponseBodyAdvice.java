@@ -1,7 +1,6 @@
 package com.github.liaojiacan.spring.enhancer.i18n.adivce;
 
 
-
 import com.github.liaojiacan.spring.enhancer.i18n.RefreshableMessageSource;
 import com.github.liaojiacan.spring.enhancer.i18n.annotation.I18n;
 import com.github.liaojiacan.spring.enhancer.i18n.annotation.Translate;
@@ -30,12 +29,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * An interceptor for translating response body
+ *
  * @author liaojiacan
  */
 @ControllerAdvice
@@ -63,52 +64,61 @@ public class I18nResponseBodyAdvice implements ResponseBodyAdvice {
 		return body;
 	}
 
-	private void translate(Object bean){
-		if(bean!=null){
+	private void translate(Object bean) {
+		if (bean != null) {
 			Class<? extends Object> clazz = bean.getClass();
 			//process collection field
-			if(bean instanceof Iterable){
-				Iterable iterable = (Iterable)bean;
-				iterable.forEach((ofBean)->{
+			if (bean instanceof Iterable) {
+				Iterable iterable = (Iterable) bean;
+				iterable.forEach((ofBean) -> {
 					translate(ofBean);
 				});
 			}
+			//process map field
+			if (bean instanceof Map) {
+				Map<?, ?> map = (Map<?, ?>) bean;
+				map.forEach((key, value) -> {
+					translate(key);
+					translate(value);
+				});
+			}
+
 			Set<Field> nextTranslateFields = findFields(clazz, I18n.class);
-			if(!nextTranslateFields.isEmpty()){
-				nextTranslateFields.forEach((translateField)->{
+			if (!nextTranslateFields.isEmpty()) {
+				nextTranslateFields.forEach((translateField) -> {
 					ReflectionUtils.makeAccessible(translateField);
 					Object fieldValue = ReflectionUtils.getField(translateField, bean);
 					translate(fieldValue);
 				});
 			}
 			Set<Field> translateFields = findFields(clazz, Translate.class);
-			if(translateFields.isEmpty()){
+			if (translateFields.isEmpty()) {
 				return;
 			}
 			ExpressionParser parser = new SpelExpressionParser();
 			EvaluationContext context = new StandardEvaluationContext(bean);
 
-			translateFields.forEach((translateField)->{
+			translateFields.forEach((translateField) -> {
 				Translate translate = translateField.getAnnotation(Translate.class);
 				String code = translate.code();
-				if(code.contains("$")||code.contains("#")){
+				if (code.contains("$") || code.contains("#")) {
 					Matcher matcher = SPEL_EXPRESSION_REGEX.matcher(code);
-					while (matcher.find()){
+					while (matcher.find()) {
 						String expStr = matcher.group(1);
 						Expression exp = parser.parseExpression(expStr);
 						String value = String.valueOf(exp.getValue(context));
-						code = code.replace("${"+expStr+"}",value);
+						code = code.replace("${" + expStr + "}", value);
 					}
 				}
-				String message =null;
+				String message = null;
 				Locale locale = LocaleContextHolder.getLocale();
 				message = getMessage(code, locale);
-				if(!StringUtils.isEmpty(message)){
+				if (!StringUtils.isEmpty(message)) {
 					ReflectionUtils.makeAccessible(translateField);
-					ReflectionUtils.setField(translateField,bean,message);
-				}else {
-					if(log.isDebugEnabled()){
-						log.debug("Ignore translation,because can not find message in english,code={}.",code);
+					ReflectionUtils.setField(translateField, bean, message);
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("Ignore translation,because can not find message in english,code={}.", code);
 					}
 				}
 
@@ -120,14 +130,14 @@ public class I18nResponseBodyAdvice implements ResponseBodyAdvice {
 	private String getMessage(String code, Locale locale) {
 		String message = null;
 		Object[] args = new Object[0];
-		try{
-			message = messageSource.getMessage(code,args, locale);
-		}catch (NoSuchMessageException e){
-			if(!Locale.ENGLISH.equals(locale)){
-				if(log.isDebugEnabled()){
-					log.debug("Can not find message, code = {},locale = {},return English!",code,locale.toLanguageTag());
+		try {
+			message = messageSource.getMessage(code, args, locale);
+		} catch (NoSuchMessageException e) {
+			if (!Locale.ENGLISH.equals(locale)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Can not find message, code = {},locale = {},return English!", code, locale.toLanguageTag());
 				}
-				return getMessage(code,Locale.ENGLISH);
+				return getMessage(code, Locale.ENGLISH);
 			}
 		}
 		return message;
