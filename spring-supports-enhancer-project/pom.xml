@@ -17,6 +17,7 @@
         <module>spring-event-enhancer</module>
         <module>spring-i18n-enhancer</module>
         <module>spring-restful-enhancer</module>
+        <module>spring-enhancer-common</module>
     </modules>
 
     <properties>
