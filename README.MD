@@ -13,6 +13,6 @@
 | 模块 | 进度     | 核心代码    | 示例工程 |
 | -- | ----- | ----- | ----------- |
 | spring-i18n-enhancer  | 开发完成 | [spring-i18n-enhancer](spring-supports-enhancer-project/spring-i18n-enhancer) | [spring-i18n-enhancer-sample](spring-supports-enhancer-samples/spring-i18n-enhancer-sample) |
-| spring-cache-enhancer  | 开发中 | [spring-cache-enhancer](spring-supports-enhancer-project/spring-cache-enhancer) |  无|
+| spring-cache-enhancer  | 实现了@CacheRefresh | [spring-cache-enhancer](spring-supports-enhancer-project/spring-cache-enhancer) |  无|
 | spring-event-enhancer  | 开发中 | [spring-event-enhancer](spring-supports-enhancer-project/spring-event-enhancer) |  无|
 | spring-restful-enhancer  | 开发中 | [spring-restful-enhancer](spring-supports-enhancer-project/spring-restful-enhancer) |  无|
