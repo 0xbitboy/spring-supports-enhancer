@@ -90,8 +90,37 @@ public class CacheInterceptorTests {
 	@Test
 	public void testRefresh() throws InterruptedException {
 		this.cache.clear();
-		String initialValue = service.getTime(Thread.currentThread().getName());
-		Thread.sleep(6000);
+		String initialValue = service.getTime("main");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true){
+					System.out.println(Thread.currentThread().getName()+":"+service.getTime("thread"));
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}).start();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true){
+					System.out.println(Thread.currentThread().getName()+":"+service.getTime("thread"));
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}).start();
+
+		Thread.sleep(100000);
+
 		String refreshValue = service.getTime(Thread.currentThread().getName());
 		assertNotSame(initialValue,refreshValue);
 	}

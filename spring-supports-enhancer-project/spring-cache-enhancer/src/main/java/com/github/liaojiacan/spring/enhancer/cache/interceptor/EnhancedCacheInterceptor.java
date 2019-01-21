@@ -1,7 +1,6 @@
 package com.github.liaojiacan.spring.enhancer.cache.interceptor;
 
 
-import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopProxyUtils;
@@ -81,12 +80,6 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 	}
 
 	@Override
-	public Object invoke(MethodInvocation invocation) throws Throwable {
-		logger.info("Intercept success!");
-		return super.invoke(invocation);
-	}
-
-	@Override
 	protected Object execute(CacheOperationInvoker invoker, Object target, Method method, Object[] args) {
 		//获取 CacheRefreshOperation .
 		//如果存在@CacheRefresh，则判断当前是否符合refresh的条件。
@@ -118,6 +111,7 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 					// 说明是第一次进入 double check
 					if (refreshMetadata == null) {
 						synchronized (refreshContext) {
+							refreshMetadata = refreshContext.getRefreshMetadata(key);
 							if (refreshMetadata == null) {
 								refreshMetadata = new CacheValueRefreshMetadata(System.currentTimeMillis(), new ReentrantReadWriteLock());
 								refreshContext.addMetadata(key, refreshMetadata);
@@ -125,7 +119,7 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 						}
 					}
 					//判断是否已经满足刷新条件了
-					if (doesNeedRefresh(cacheRefreshOperation, refreshMetadata)) {
+					if (determineIfRequireRefreshing(cacheRefreshOperation, refreshMetadata)) {
 						ReentrantReadWriteLock.WriteLock writeLock = refreshMetadata.readWriteLock.writeLock();
 						ReentrantReadWriteLock.ReadLock readLock = refreshMetadata.readWriteLock.readLock();
 						try {
@@ -135,7 +129,7 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 								//如果需要刷新则尝试获取写锁
 								//在限定时间内获取到读锁
 								readLock.unlock();
-								if(doesNeedRefresh(cacheRefreshOperation,refreshMetadata) && writeLock.tryLock()){
+								if(determineIfRequireRefreshing(cacheRefreshOperation,refreshMetadata) && writeLock.tryLock()){
 									//开始执行刷新缓存逻辑
 									Object value = invoker.invoke();
 									//TODO 这里可能要对 condition 和 less等进行判断
@@ -144,15 +138,19 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 									return value;
 								}else {
 									//获取不到锁，锁已经被其他线程获取，忽略更新逻辑，直接跳到下一层逻辑，返回缓存值
+									logger.debug("Requiring writeLock fail due to the other thread took it already, return the old-cached value.");
 									return super.execute(invoker,target,method,args);
 								}
 							}else {
 								//获取锁超时了，直接返回缓存值
+								if(logger.isDebugEnabled()){
+									logger.debug("Wait timeout , return the old-cached value.");
+								}
 								return super.execute(invoker,target,method,args);
 							}
 
 						} catch (InterruptedException e) {
-							e.printStackTrace();
+							Thread.currentThread().interrupt();
 						}finally {
 							if(writeLock.isHeldByCurrentThread()){
 								writeLock.unlock();
@@ -169,7 +167,7 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 		return super.execute(invoker, target, method, args);
 	}
 
-	private boolean doesNeedRefresh(CacheRefreshOperation cacheRefreshOperation, CacheValueRefreshMetadata refreshMetadata) {
+	private boolean determineIfRequireRefreshing(CacheRefreshOperation cacheRefreshOperation, CacheValueRefreshMetadata refreshMetadata) {
 		return System.currentTimeMillis() - refreshMetadata.lastWriteTime >= TimeUnit.MILLISECONDS.convert(cacheRefreshOperation.getRefreshAfterWrite(), cacheRefreshOperation.getUnit());
 	}
 
