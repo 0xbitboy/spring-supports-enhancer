@@ -1,4 +1,4 @@
-package com.github.liaojiacan.spring.enhancer.i18n.adivce;
+package com.github.liaojiacan.spring.enhancer.i18n.advice;
 
 
 import com.github.liaojiacan.spring.enhancer.i18n.RefreshableMessageSource;

@@ -2,7 +2,7 @@ package com.github.liaojiacan.spring.enhancer.i18n.sample.config;
 
 import com.github.liaojiacan.spring.enhancer.i18n.MessageSourceProvider;
 import com.github.liaojiacan.spring.enhancer.i18n.RefreshableMessageSource;
-import com.github.liaojiacan.spring.enhancer.i18n.adivce.I18nResponseBodyAdvice;
+import com.github.liaojiacan.spring.enhancer.i18n.advice.I18nResponseBodyAdvice;
 import com.github.liaojiacan.spring.enhancer.i18n.manager.MessageSourceProviderManager;
 import com.github.liaojiacan.spring.enhancer.i18n.provider.CustomMessageSourceProvider;
 import com.github.liaojiacan.spring.enhancer.i18n.provider.JdbcMessageSourceProvider;
