@@ -54,7 +54,6 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 		static {
 
 			try {
-
 				Class<?> clazz = Class.forName("org.springframework.cache.interceptor.CacheOperationExpressionEvaluator");
 				Field F_NO_RESULT = clazz.getField("NO_RESULT");
 				Field F_RESULT_UNAVAILABLE = clazz.getField("RESULT_UNAVAILABLE");
@@ -101,7 +100,7 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 					if (refreshContext == null) {
 						//这里是不是得加锁?
 						refreshContext = new CacheRefreshOperationContext(metadata, args, target);
-						this.refreshOperationContextCache.put(annotatedElementKey,refreshContext);
+						this.refreshOperationContextCache.put(annotatedElementKey, refreshContext);
 					}
 
 					CacheRefreshOperationContext opContext = new CacheRefreshOperationContext(metadata, args, target);
@@ -124,35 +123,36 @@ public class EnhancedCacheInterceptor extends CacheInterceptor {
 						ReentrantReadWriteLock.ReadLock readLock = refreshMetadata.readWriteLock.readLock();
 						try {
 							//先获取读锁
-							if(readLock.tryLock(cacheRefreshOperation.getTimeWait(),cacheRefreshOperation.getUnit())){
+							if (readLock.tryLock(cacheRefreshOperation.getTimeWait(), cacheRefreshOperation.getUnit())) {
 								//再判断一次是否需要刷新
 								//如果需要刷新则尝试获取写锁
 								//在限定时间内获取到读锁
 								readLock.unlock();
-								if(determineIfRequireRefreshing(cacheRefreshOperation,refreshMetadata) && writeLock.tryLock()){
+								// 这里可能永远获取不到写锁，可能还有其他线程还持有读锁
+								if (determineIfRequireRefreshing(cacheRefreshOperation, refreshMetadata) && writeLock.tryLock()) {
 									//开始执行刷新缓存逻辑
 									Object value = invoker.invoke();
 									//TODO 这里可能要对 condition 和 less等进行判断
-									opContext.getCaches().stream().forEach(cache->cache.put(key,value));
+									opContext.getCaches().stream().forEach(cache -> cache.put(key, value));
 									refreshMetadata.lastWriteTime = System.currentTimeMillis();
 									return value;
-								}else {
+								} else {
 									//获取不到锁，锁已经被其他线程获取，忽略更新逻辑，直接跳到下一层逻辑，返回缓存值
 									logger.debug("Requiring writeLock fail due to the other thread took it already, return the old-cached value.");
-									return super.execute(invoker,target,method,args);
+									return super.execute(invoker, target, method, args);
 								}
-							}else {
+							} else {
 								//获取锁超时了，直接返回缓存值
-								if(logger.isDebugEnabled()){
+								if (logger.isDebugEnabled()) {
 									logger.debug("Wait timeout , return the old-cached value.");
 								}
-								return super.execute(invoker,target,method,args);
+								return super.execute(invoker, target, method, args);
 							}
 
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
-						}finally {
-							if(writeLock.isHeldByCurrentThread()){
+						} finally {
+							if (writeLock.isHeldByCurrentThread()) {
 								writeLock.unlock();
 							}
 						}

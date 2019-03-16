@@ -42,13 +42,12 @@ import java.util.regex.Pattern;
 @ControllerAdvice
 public class I18nResponseBodyAdvice implements ResponseBodyAdvice {
 
+	private final static  Logger log = LoggerFactory.getLogger(I18nResponseBodyAdvice.class);
+
+	private final static Pattern SPEL_EXPRESSION_REGEX = Pattern.compile("[\\$\\#]\\{(.+?)\\}");
 
 	@Autowired
 	private RefreshableMessageSource messageSource;
-
-	private static final Logger log = LoggerFactory.getLogger(I18nResponseBodyAdvice.class);
-
-	private final static Pattern SPEL_EXPRESSION_REGEX = Pattern.compile("[\\$\\#]\\{(.+?)\\}");
 
 	@Override
 	public boolean supports(MethodParameter returnType, Class converterType) {

@@ -25,7 +25,7 @@ public class CustomMessageSourceProvider implements MessageSourceProvider {
 	 */
 	protected static final String CODE_TPL = "%s.%s.%s";
 
-	private static final  String DELIMITER = "`";
+	private static final String DELIMITER = "`";
 
 	private String providerName;
 	private JdbcTemplate jdbcTemplate;
@@ -61,17 +61,17 @@ public class CustomMessageSourceProvider implements MessageSourceProvider {
 	@Override
 	public List<MessageEntry> load() {
 
-		String sql = String.format(QUERY_TPL_SELECT_MESSAGE_ENTRIES, this.keyColumn,String.join(",",this.columns.stream().map(col->addDelimiter(col)).collect(Collectors.toList())),this.tableName);
+		String sql = String.format(QUERY_TPL_SELECT_MESSAGE_ENTRIES, this.keyColumn, String.join(",", this.columns.stream().map(col -> addDelimiter(col)).collect(Collectors.toList())), this.tableName);
 		SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql);
 
 		List<MessageEntry> entries = new ArrayList<>(this.columns.size());
 
-		while (rowSet.next()){
+		while (rowSet.next()) {
 			String identity = String.valueOf(rowSet.getString(this.keyColumn));
 			String locale = String.valueOf(rowSet.getString("locale"));
-			Assert.notNull(identity,"KeyColumn value can not be null");
+			Assert.notNull(identity, "KeyColumn value can not be null");
 			this.columns.forEach(column -> {
-				String code = String.format(CODE_TPL,this.codePrefix,identity,column);
+				String code = String.format(CODE_TPL, this.codePrefix, identity, column);
 				String message = String.valueOf(rowSet.getString(column));
 				MessageEntry messageEntry = new MessageEntry();
 				messageEntry.setCode(code);

@@ -14,6 +14,7 @@ import java.util.Collection;
 
 /**
  * Strategy implementation for parsing an extend annotation {@link CacheRefresh}
+ *
  * @author liaojiacan
  * @date 2019/1/14
  */
@@ -66,14 +67,14 @@ public class EnhancedSpringCacheAnnotationParser implements CacheAnnotationParse
 
 
 	/**
+	 * @param ae        the annotated element of the cache operation
+	 * @param operation the {@link CacheOperation} to validate
 	 * @see org.springframework.cache.annotation.SpringCacheAnnotationParser#validateCacheOperation(AnnotatedElement, CacheOperation)
-	 *
+	 * <p>
 	 * Validates the specified {@link CacheOperation}.
 	 * <p>Throws an {@link IllegalStateException} if the state of the operation is
 	 * invalid. As there might be multiple sources for default values, this ensure
 	 * that the operation is in a proper state before being returned.
-	 * @param ae the annotated element of the cache operation
-	 * @param operation the {@link CacheOperation} to validate
 	 */
 	private void validateCacheOperation(AnnotatedElement ae, CacheOperation operation) {
 		if (StringUtils.hasText(operation.getKey()) && StringUtils.hasText(operation.getKeyGenerator())) {
@@ -94,8 +95,10 @@ public class EnhancedSpringCacheAnnotationParser implements CacheAnnotationParse
 	private <T extends Annotation> Collection<CacheOperation> lazyInit(Collection<CacheOperation> ops) {
 		return (ops != null ? ops : new ArrayList<CacheOperation>(1));
 	}
+
 	/**
 	 * Provides the {@link SpringCacheAnnotationParser.DefaultCacheConfig} instance for the specified {@link Class}.
+	 *
 	 * @param target the class-level to handle
 	 * @return the default config (never {@code null})
 	 */
@@ -107,8 +110,10 @@ public class EnhancedSpringCacheAnnotationParser implements CacheAnnotationParse
 		}
 		return new DefaultCacheConfig();
 	}
+
 	/**
 	 * Provides default settings for a given set of cache operations.
+	 *
 	 * @see org.springframework.cache.annotation.SpringCacheAnnotationParser.DefaultCacheConfig;
 	 */
 	static class DefaultCacheConfig {
@@ -134,6 +139,7 @@ public class EnhancedSpringCacheAnnotationParser implements CacheAnnotationParse
 
 		/**
 		 * Apply the defaults to the specified {@link CacheOperation.Builder}.
+		 *
 		 * @param builder the operation builder to update
 		 */
 		public void applyDefault(CacheOperation.Builder builder) {
@@ -147,11 +153,9 @@ public class EnhancedSpringCacheAnnotationParser implements CacheAnnotationParse
 
 			if (StringUtils.hasText(builder.getCacheManager()) || StringUtils.hasText(builder.getCacheResolver())) {
 				// One of these is set so we should not inherit anything
-			}
-			else if (StringUtils.hasText(this.cacheResolver)) {
+			} else if (StringUtils.hasText(this.cacheResolver)) {
 				builder.setCacheResolver(this.cacheResolver);
-			}
-			else if (StringUtils.hasText(this.cacheManager)) {
+			} else if (StringUtils.hasText(this.cacheManager)) {
 				builder.setCacheManager(this.cacheManager);
 			}
 		}

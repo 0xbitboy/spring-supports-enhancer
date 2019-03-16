@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * @author liaojiacan https://github.com/liaojiacan
  */
-public class RefreshableMessageSource extends AbstractMessageSource implements Refreshable,InitializingBean{
+public class RefreshableMessageSource extends AbstractMessageSource implements Refreshable, InitializingBean {
 
 	private Collection<? extends MessageSourceProvider> providers;
 
@@ -25,7 +25,7 @@ public class RefreshableMessageSource extends AbstractMessageSource implements R
 	/**
 	 * The MessageFormat cache
 	 */
-	private Map<String,Map<Locale,MessageFormat>> messageEntryMap = Collections.emptyMap();
+	private Map<String, Map<Locale, MessageFormat>> messageEntryMap = Collections.emptyMap();
 
 	public RefreshableMessageSource(MessageSourceProvider provider) {
 		this.providers = Arrays.asList(provider);
@@ -37,20 +37,20 @@ public class RefreshableMessageSource extends AbstractMessageSource implements R
 
 
 	@Override
-	public void refresh(){
-		final Map<String,Map<Locale,MessageFormat>> finalMap = new HashMap<>();
+	public void refresh() {
+		final Map<String, Map<Locale, MessageFormat>> finalMap = new HashMap<>();
 		this.providers.forEach(provider -> {
 			List<MessageEntry> messageEntries = provider.load();
-			if(!CollectionUtils.isEmpty(messageEntries)){
+			if (!CollectionUtils.isEmpty(messageEntries)) {
 				messageEntries.forEach(messageEntry -> {
-					String code  = messageEntry.getCode();
+					String code = messageEntry.getCode();
 					Locale locale = Locale.forLanguageTag(messageEntry.getLocale());
 					Map<Locale, MessageFormat> localeMapping = finalMap.get(code);
-					if(localeMapping == null){
+					if (localeMapping == null) {
 						localeMapping = new HashMap<>(Locale.getAvailableLocales().length);
-						finalMap.put(code,localeMapping);
+						finalMap.put(code, localeMapping);
 					}
-					localeMapping.put(locale,createMessageFormat(messageEntry.getMessage(),locale));
+					localeMapping.put(locale, createMessageFormat(messageEntry.getMessage(), locale));
 
 				});
 			}
@@ -61,14 +61,14 @@ public class RefreshableMessageSource extends AbstractMessageSource implements R
 	@Override
 	protected MessageFormat resolveCode(String code, Locale locale) {
 		Map<Locale, MessageFormat> localeMessageMap = messageEntryMap.get(code);
-		if(localeMessageMap != null ){
+		if (localeMessageMap != null) {
 			MessageFormat mf = localeMessageMap.get(locale);
-			if(mf!=null){
-				return  mf;
+			if (mf != null) {
+				return mf;
 			}
 		}
-		if(returnUnresolvedCode){
-			return createMessageFormat(code,locale);
+		if (returnUnresolvedCode) {
+			return createMessageFormat(code, locale);
 		}
 		return null;
 	}
