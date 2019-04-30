@@ -2,6 +2,9 @@
 &emsp;&emsp; 本项目是对spring中的事件驱动编程进行的拓展，从ApplicationEventMultiCaster下手，将ApplicationEvent与RabbitMQ结合，实现可靠的事件传递与延时事件的目的。
 当然也可以使用其他消息队列去承载。
 
+## 更新记录
+1. 2019-04-30 加入可靠消息的实现。
+
 ## 应用场景
 
 1. 你的项目中大量使用的ApplicationEvent ，但是在做服务拆分的时候想做最小的改动。
