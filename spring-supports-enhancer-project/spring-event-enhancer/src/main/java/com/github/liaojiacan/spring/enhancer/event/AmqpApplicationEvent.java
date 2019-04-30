@@ -17,6 +17,11 @@ public class AmqpApplicationEvent extends ApplicationEvent {
 	private static final long serialVersionUID = -3051024683057439677L;
 
 	/**
+	 * 事件Id
+	 */
+	private String eventId;
+
+	/**
 	 * 发起事件主机名
 	 */
 	private final String fromHost = HostNameUtil.localHostName;
@@ -80,5 +85,13 @@ public class AmqpApplicationEvent extends ApplicationEvent {
 
 	public String getFrom() {
 		return from;
+	}
+
+	public String getEventId() {
+		return eventId;
+	}
+
+	public void setEventId(String eventId) {
+		this.eventId = eventId;
 	}
 }
