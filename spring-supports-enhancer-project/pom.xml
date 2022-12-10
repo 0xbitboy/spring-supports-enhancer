@@ -29,7 +29,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd-z-HH-mm-ss</maven.build.timestamp.format>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
-        <spring.version>4.3.18.RELEASE</spring.version>
+        <spring.version>6.0.0</spring.version>
         <spring-boot.version>1.5.8.RELEASE</spring-boot.version>
         <spring.data.release.train.version>Fowler-SR2</spring.data.release.train.version>
     </properties>
